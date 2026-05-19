@@ -1,0 +1,41 @@
+/* Basemap / fullscreen toggle buttons — ported from map-tools/style.scss. */
+
+.map-tools-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(50, 50, 50, 0.9);
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.map-tool-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+  padding: 4px;
+  color: #ccc;
+  transition: background 0.15s, border-color 0.15s;
+}
+.map-tool-btn:hover { background: rgba(255, 255, 255, 0.15); }
+.map-tool-btn.active {
+  background: rgba(0, 121, 193, 0.3);
+  border-color: #0079c1;
+  color: #4fc3f7;
+}
+.map-tool-btn span {
+  display: flex;
+  width: 18px;
+  height: 18px;
+}
+.map-tool-btn svg {
+  width: 18px;
+  height: 18px;
+}

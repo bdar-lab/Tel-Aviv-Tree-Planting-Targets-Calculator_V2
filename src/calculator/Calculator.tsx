@@ -1,0 +1,248 @@
+import { useState } from 'react'
+import type FeatureLayer from '@arcgis/core/layers/FeatureLayer'
+import type MapView from '@arcgis/core/views/MapView'
+import { t, CATEGORY_LABELS } from '../i18n/strings'
+import { type Locale } from '../i18n/locale'
+import { computeResults, type Results, type SegmentRecord, fmtInt, formatNum } from './compute'
+import { translateFilters, downloadCsv, openPdfReport } from './report'
+
+// ─────────────────────────────────────────────────────────────────────────
+// Calculation method + parameters + results panel. Queries the "Selected
+// streets" FeatureLayer directly (no ExB DataSourceManager).
+// ─────────────────────────────────────────────────────────────────────────
+
+// Field-name config — matches the TLV_joined_segment feature service schema.
+const FIELD_CONFIG = {
+  lengthField: 'length',
+  widthField: 'width',
+  wtypeField: 'W_type',
+  existingTreesField: 'Large_sum',
+  underdevelopedTreesField: 'Small_sum'
+}
+const ROWS = 2
+
+interface Props {
+  locale: Locale
+  /** The "Selected streets" layer — its definitionExpression is the filter. */
+  selectedLayer: FeatureLayer | null
+  /** MapView, needed for the PDF screenshot. */
+  view: MapView | null
+  /** Live segment count string (managed by the parent's polling). */
+  segmentCountText: string
+  /** Lets the parent show "Processing…" instead of the polled count. */
+  onLoadingChange: (loading: boolean) => void
+  setSegmentCountText: (s: string) => void
+}
+
+export default function Calculator ({
+  locale, selectedLayer, view, segmentCountText, onLoadingChange, setSegmentCountText
+}: Props) {
+  const cat = CATEGORY_LABELS[locale]
+
+  const [scenario, setScenario] = useState<'s1' | 's2'>('s1')
+  const [subScenario, setSubScenario] = useState<'1a' | '1b'>('1a')
+  const [diameter, setDiameter] = useState(8)
+  const [tccrGlobal, setTccrGlobal] = useState(0.6)
+  const [wtypeTargets, setWtypeTargets] = useState<Record<string, number>>(
+    { '1': 0.50, '2': 0.40, '3': 0.40, '4': 0.40, '5': 0.40 }
+  )
+  const [spacing, setSpacing] = useState(25)
+  const [results, setResults] = useState<Results | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const onCompute = async () => {
+    if (!selectedLayer) return
+    setLoading(true); onLoadingChange(true)
+    setSegmentCountText(t(locale, 'fetchingRecords'))
+    try {
+      const where = selectedLayer.definitionExpression || '1=1'
+      // Paginated fetch of all matching features.
+      const features: any[] = []
+      let offset = 0
+      let done = false
+      while (!done) {
+        const q = selectedLayer.createQuery()
+        q.where = where
+        q.outFields = ['*']
+        q.returnGeometry = false
+        q.start = offset
+        q.num = 2000
+        const res = await selectedLayer.queryFeatures(q)
+        if (res?.features?.length) features.push(...res.features)
+        if (!res.features || res.features.length < 2000) done = true
+        else offset += 2000
+      }
+      if (features.length === 0) {
+        setSegmentCountText(t(locale, 'noRecordsFound'))
+        setLoading(false); onLoadingChange(false)
+        return
+      }
+      const recs: SegmentRecord[] = features.map(f => ({
+        getFieldValue: (field: string) => f.attributes[field]
+      }))
+      const summary = computeResults(
+        recs,
+        {
+          scenario, subScenario, diameter, tccrGlobal, wtypeTargets,
+          spacing, rows: ROWS, ...FIELD_CONFIG
+        },
+        translateFilters(where, locale)
+      )
+      setResults(summary)
+      setSegmentCountText(t(locale, 'calculatedSegments', { n: features.length }))
+    } catch (err) {
+      console.error(err)
+      setSegmentCountText(t(locale, 'errorFetching'))
+    } finally {
+      setLoading(false); onLoadingChange(false)
+    }
+  }
+
+  const handleCsv = () => {
+    if (results) downloadCsv(results, cat)
+  }
+
+  const handlePdf = async () => {
+    if (!results || !view) return
+    const shot = await view.takeScreenshot({ format: 'png' })
+    openPdfReport(
+      results,
+      { scenario, subScenario, diameter, tccrGlobal, spacing },
+      locale, cat, shot.dataUrl
+    )
+  }
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '4px 6px', background: '#3a3a3a',
+    border: '1px solid #555', borderRadius: 3, color: '#eee', fontSize: 12
+  }
+
+  return (
+    <div style={{ padding: '8px 10px' }} dir={locale === 'he' ? 'rtl' : 'ltr'}>
+      <div style={{ fontSize: 12, fontStyle: 'italic', color: '#bbb', lineHeight: 1.4, marginBottom: 4, textAlign: locale === 'he' ? 'right' : 'left' }}>
+        {t(locale, 'instruction')}
+      </div>
+      <div style={{ fontSize: 12, color: '#4fc3f7', marginBottom: 6 }}>{segmentCountText}</div>
+
+      {/* Method */}
+      <div style={{ marginBottom: 6 }}>
+        <div style={{ fontWeight: 'bold', fontSize: 15, marginBottom: 4 }}>{t(locale, 'calculationMethod')}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <label style={{ fontSize: 12, cursor: 'pointer' }}>
+            <input type="radio" checked={scenario === 's1'} onChange={() => setScenario('s1')}
+              style={{ marginInlineEnd: 6, accentColor: '#0079c1' }} />
+            {t(locale, 'method1')}
+          </label>
+          <div style={{ paddingInlineStart: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <label style={{ fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+              <input type="checkbox" checked={scenario === 's1' && subScenario === '1a'}
+                onChange={() => { setScenario('s1'); setSubScenario('1a') }}
+                style={{ width: 14, height: 14, marginInlineEnd: 6, accentColor: '#0079c1' }} />
+              {t(locale, 'method1aGlobal')}
+            </label>
+            <label style={{ fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+              <input type="checkbox" checked={scenario === 's1' && subScenario === '1b'}
+                onChange={() => { setScenario('s1'); setSubScenario('1b') }}
+                style={{ width: 14, height: 14, marginInlineEnd: 6, accentColor: '#0079c1' }} />
+              {t(locale, 'method1bByWidth')}
+            </label>
+          </div>
+          <label style={{ fontSize: 12, cursor: 'pointer', marginTop: 2 }}>
+            <input type="radio" checked={scenario === 's2'} onChange={() => setScenario('s2')}
+              style={{ marginInlineEnd: 6, accentColor: '#0079c1' }} />
+            {t(locale, 'method2')}
+          </label>
+        </div>
+      </div>
+
+      {/* Parameters */}
+      <div style={{ marginBottom: 6, padding: 8, border: '1px solid #555', borderRadius: 4 }}>
+        <div style={{ fontWeight: 'bold', fontSize: 15, marginBottom: 4 }}>{t(locale, 'calculationParameters')}</div>
+        <div style={{ marginBottom: 4 }}>
+          <div style={{ fontSize: 11, marginBottom: 2 }}>{t(locale, 'crownDiameter')}</div>
+          <input type="text" value={String(diameter)} onChange={e => setDiameter(Number(e.target.value))} style={inputStyle} />
+        </div>
+        {scenario === 's1' && subScenario === '1a' && (
+          <div style={{ marginBottom: 4 }}>
+            <div style={{ fontSize: 11, marginBottom: 2 }}>{t(locale, 'globalTccr')}</div>
+            <input type="text" value={String(tccrGlobal)} onChange={e => setTccrGlobal(Number(e.target.value))} style={inputStyle} />
+          </div>
+        )}
+        {scenario === 's1' && subScenario === '1b' && (
+          <div style={{ padding: 6, border: '1px solid #555', borderRadius: 3, fontSize: 11 }}>
+            <div style={{ fontWeight: 'bold', marginBottom: 4 }}>{t(locale, 'tccrTargetsByWidth')}</div>
+            {Object.keys(wtypeTargets).sort().map(id => (
+              <div key={id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                <span>{cat[id] || `${t(locale, 'classLabel')} ${id}`}:</span>
+                <input type="text" value={String(wtypeTargets[id])}
+                  onChange={e => setWtypeTargets({ ...wtypeTargets, [id]: Number(e.target.value) })}
+                  style={{ width: 60, padding: '2px 4px', background: '#3a3a3a', border: '1px solid #555', borderRadius: 3, color: '#eee', fontSize: 11, textAlign: 'end' }} />
+              </div>
+            ))}
+          </div>
+        )}
+        {scenario === 's2' && (
+          <div style={{ marginBottom: 4 }}>
+            <div style={{ fontSize: 11, marginBottom: 2 }}>{t(locale, 'desiredSpacing')}</div>
+            <input type="text" value={String(spacing)} onChange={e => setSpacing(Number(e.target.value))} style={inputStyle} />
+          </div>
+        )}
+      </div>
+
+      <button onClick={onCompute} disabled={!selectedLayer || loading}
+        style={{ width: '100%', padding: '8px', background: loading ? '#555' : '#4a90d9', color: '#fff', border: 'none', borderRadius: 4, fontSize: 13, cursor: loading ? 'default' : 'pointer', marginBottom: 8 }}>
+        {loading ? t(locale, 'processing') : t(locale, 'calculate')}
+      </button>
+
+      {results && (
+        <div style={{ padding: 10, border: '1px solid #555', borderRadius: 4, background: '#333' }}>
+          <div style={{ fontWeight: 'bold', borderBottom: '1px solid #555', marginBottom: 6, paddingBottom: 4, textTransform: 'uppercase', fontSize: 11 }}>{t(locale, 'results')}</div>
+          <Row label={t(locale, 'selectedSegments')} value={fmtInt(results.segmentCount)} />
+          <Row label={t(locale, 'totalStreetLength')} value={`${fmtInt(results.totalLength)} m`} />
+          <Row label={t(locale, 'idealTrees')} value={fmtInt(results.totalTrees)} mt />
+          <Row label={t(locale, 'existingShadeTrees')} value={fmtInt(results.totalExistingShade)} />
+          <Row label={t(locale, 'underdevelopedTrees')} value={fmtInt(results.totalExistingUnder)} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 'bold', borderBottom: '1px solid #555', paddingBottom: 4, marginBottom: 4 }}>
+            <span>{t(locale, 'newTreesToPlant')}</span><strong>{fmtInt(results.treesToAdd)}</strong>
+          </div>
+          <Row label={t(locale, 'weightedTccr')} value={formatNum(results.avgTccr)} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 8 }}>
+            <span>{t(locale, 'avgSpacing')}</span><strong>{fmtInt(results.avgSpacing)} m</strong>
+          </div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+            <button onClick={handleCsv} style={resultBtn}>{t(locale, 'exportCsv')}</button>
+            <button onClick={handlePdf} style={resultBtn}>{t(locale, 'printPdf')}</button>
+          </div>
+          <div style={{ marginTop: 8 }}>
+            <div style={{ fontWeight: 'bold', borderBottom: '1px solid #555', marginBottom: 4, fontSize: 11, textTransform: 'uppercase' }}>{t(locale, 'analysisByWidth')}</div>
+            {Object.keys(results.byWtype).sort().map(k => (
+              <div key={k} style={{ borderBottom: '1px solid #444', paddingBottom: 4, marginBottom: 4, fontSize: 11 }}>
+                <div style={{ fontWeight: 'bold', color: '#4fc3f7' }}>{cat[k] || `${t(locale, 'classLabel')} ${k}`}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{t(locale, 'addTrees', { n: fmtInt(results.byWtype[k].treesToAdd) })}</span>
+                  <span>{t(locale, 'tccrLabel')}: {formatNum(results.byWtype[k].tccr)}</span>
+                </div>
+                <div style={{ color: '#888', fontSize: 10 }}>
+                  {t(locale, 'spacingLabel')}: {fmtInt(results.byWtype[k].spacing)} m | {t(locale, 'lengthLabel')}: {fmtInt(results.byWtype[k].length)} m
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const resultBtn: React.CSSProperties = {
+  flex: 1, padding: '4px 8px', background: '#4a4a4a', color: '#eee',
+  border: '1px solid #666', borderRadius: 3, fontSize: 11, cursor: 'pointer'
+}
+
+function Row ({ label, value, mt }: { label: string; value: string; mt?: boolean }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: mt ? 4 : 0 }}>
+      <span>{label}</span><strong>{value}</strong>
+    </div>
+  )
+}

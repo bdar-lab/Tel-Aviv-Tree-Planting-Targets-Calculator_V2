@@ -1,0 +1,236 @@
+/* ArcGIS SDK base styles (dark theme to match the original Astro theme). */
+@import url('https://js.arcgis.com/4.34/@arcgis/core/assets/esri/themes/dark/main.css');
+
+:root {
+  --bg: #2b2b2b;
+  --panel-bg: #313030;
+  --text: #eee;
+  --primary: #39a5ff;
+  --accent: #4fc3f7;
+  --border: #555;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: 'Segoe UI', 'Avenir Next', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app-header {
+  height: 50px;
+  flex: 0 0 50px;
+  background: #0b0b0b;
+  position: relative;
+}
+
+/* BDAR lab logo, pinned to the header's left edge. */
+.header-logo {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  height: 32px;
+}
+.header-logo img {
+  height: 28px;
+  width: auto;
+  display: block;
+}
+
+/* Site title centered on the header midline regardless of side chrome. */
+.app-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 20px;
+  white-space: nowrap;
+  max-width: 60vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+/* Instructions / About buttons, just left of the toggle. */
+.header-actions {
+  position: absolute;
+  right: 72px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 14px;
+}
+
+.header-link {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+.header-link:hover { text-decoration: underline; }
+
+/* EN/HE toggle pinned to the far right. */
+.header-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.lang-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  opacity: 0.9;
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ── Modal dialogs ─────────────────────────────────────────────────────── */
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20000;
+}
+
+.dialog-window {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: min(720px, 92vw);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dialog-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.dialog-close {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.dialog-close:hover { color: #fff; }
+
+.dialog-body {
+  padding: 14px 18px;
+  overflow-y: auto;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.dialog-body a { color: var(--primary); }
+
+.app-main {
+  flex: 1 1 auto;
+  position: relative;
+  display: flex;
+  min-height: 0;
+}
+
+/* ── Map ───────────────────────────────────────────────────────────────── */
+.map-panel {
+  flex: 1 1 auto;
+  position: relative;
+}
+
+.map-view {
+  position: absolute;
+  inset: 0;
+}
+
+.map-error {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(180, 30, 30, 0.9);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  z-index: 10;
+}
+
+/* Layers panel — flush against the LEFT edge, full height below the header
+   (the calculator sidebar overlays the right edge). */
+.map-overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 300px;
+  z-index: 7;
+  border-right: 1px solid var(--border);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Calculator sidebar ────────────────────────────────────────────────── */
+.sidebar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 320px;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  z-index: 6;
+  color: var(--text);
+}
+
+/* Map tools (basemap / fullscreen) — just to the right of the 300px-wide
+   layers panel. */
+.map-tools-overlay {
+  position: absolute;
+  top: 12px;
+  left: 312px;
+  z-index: 7;
+}
+
+/* Tablet / phone: hide the calculator sidebar, map-only view. */
+@media (max-width: 860px) {
+  .sidebar { display: none; }
+  .map-overlay { width: 220px; }
+  .map-tools-overlay { left: 232px; }
+}
