@@ -228,9 +228,16 @@ body {
   z-index: 7;
 }
 
+/* Shift the ArcGIS bottom-left UI corner (where we put the zoom widget)
+   to the right of the layers panel so it isn't hidden behind it. */
+.esri-ui-bottom-left {
+  left: 312px !important;
+}
+
 /* Tablet / phone: hide the calculator sidebar, map-only view. */
 @media (max-width: 860px) {
   .sidebar { display: none; }
   .map-overlay { width: 220px; }
   .map-tools-overlay { left: 232px; }
+  .esri-ui-bottom-left { left: 232px !important; }
 }

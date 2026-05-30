@@ -9,9 +9,9 @@ import { type Results, fmtInt, formatNum } from './compute'
 
 const FIELD_KEYS: Array<{ field: string; key: StringKey }> = [
   { field: 'summer_SI', key: 'sql_summer_SI' },
-  { field: 'ABw2k_max', key: 'sql_ABw2k_max' },
-  { field: 'ABw5k_max', key: 'sql_ABw5k_max' },
-  { field: 'AIw1kH_mea', key: 'sql_AIw1kH_mea' },
+  { field: 'class_2k', key: 'sql_ABw2k_max' },
+  { field: 'class_5k', key: 'sql_ABw5k_max' },
+  { field: 'class_ai1k', key: 'sql_AIw1kH_mea' },
   { field: 'FSI500_mea', key: 'sql_FSI500_mea' },
   { field: 'ARw500lm_1', key: 'sql_ARw500lm_1' },
   { field: 'ADws_mean', key: 'sql_ADws_mean' },

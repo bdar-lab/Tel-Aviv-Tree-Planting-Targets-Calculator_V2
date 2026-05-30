@@ -117,6 +117,36 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Tick labels under a categorical slider. The slider's thumb is 14 px,
+   so its centre at the extremes sits 7 px inside the input element. We
+   pad the tick row by 7 px on each side so a tick label (and its blue
+   active highlight) sits directly under the thumb at every position. */
+.compact-filter-tick-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0 7px;
+  margin-top: 2px;
+  font-size: 9px;
+  color: #888;
+  font-variant-numeric: tabular-nums;
+  position: relative;
+}
+.compact-filter-tick {
+  /* Zero-width labels centred on their position: each label is positioned
+     at its slot's centre and the text overflows symmetrically so it
+     visually centres on the slider thumb. */
+  flex: 0 0 0;
+  text-align: center;
+  white-space: nowrap;
+  overflow: visible;
+  line-height: 14px;
+}
+.compact-filter-tick.active {
+  color: #4fc3f7;
+  font-weight: 600;
+}
+
 .compact-filter-range-row {
   display: flex;
   align-items: center;

@@ -42,6 +42,11 @@ export default function Calculator ({
   const [scenario, setScenario] = useState<'s1' | 's2'>('s1')
   const [subScenario, setSubScenario] = useState<'1a' | '1b'>('1a')
   const [diameter, setDiameter] = useState(8)
+  // Mirror of `diameter` as raw text so partial input like "8." stays in the
+  // box while the user is typing. Accepts digits + one optional decimal
+  // point + up to one decimal digit; the numeric `diameter` is updated
+  // whenever the text parses to a valid finite number.
+  const [diameterText, setDiameterText] = useState('8')
   const [tccrGlobal, setTccrGlobal] = useState(0.6)
   const [wtypeTargets, setWtypeTargets] = useState<Record<string, number>>(
     { '1': 0.50, '2': 0.40, '3': 0.40, '4': 0.40, '5': 0.40 }
@@ -160,7 +165,21 @@ export default function Calculator ({
         <div style={{ fontWeight: 'bold', fontSize: 15, marginBottom: 4 }}>{t(locale, 'calculationParameters')}</div>
         <div style={{ marginBottom: 4 }}>
           <div style={{ fontSize: 11, marginBottom: 2 }}>{t(locale, 'crownDiameter')}</div>
-          <input type="text" value={String(diameter)} onChange={e => setDiameter(Number(e.target.value))} style={inputStyle} />
+          <input
+            type="text"
+            inputMode="decimal"
+            value={diameterText}
+            onChange={e => {
+              const v = e.target.value
+              // Allow empty, digits, optionally a single decimal point and
+              // up to one decimal digit (e.g. "", "8", "8.", "8.1").
+              if (!/^\d*\.?\d{0,1}$/.test(v)) return
+              setDiameterText(v)
+              const n = Number(v)
+              if (isFinite(n) && v !== '' && v !== '.') setDiameter(n)
+            }}
+            style={inputStyle}
+          />
         </div>
         {scenario === 's1' && subScenario === '1a' && (
           <div style={{ marginBottom: 4 }}>

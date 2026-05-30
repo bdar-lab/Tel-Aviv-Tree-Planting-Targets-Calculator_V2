@@ -27,6 +27,33 @@ function FilterIconImg ({ def, label }: { def: FilterDef; label: string }) {
 function SliderContent ({ def, value, onChange, locale }: {
   def: FilterDef & { type: 'slider' }; value: number; onChange: (v: number) => void; locale: Locale
 }) {
+  // Categorical slider: discrete categories with custom tick labels.
+  // Slider position N → categories[N] → SQL e.g. `class_2k >= 5`.
+  // The readout is "Top X% selected" using tickLabels[N].
+  const categories = def.categories
+  const tickLabels = def.tickLabels
+  if (categories && tickLabels && categories.length === tickLabels.length) {
+    const idx = Math.max(0, categories.indexOf(value))
+    const safeIdx = idx >= 0 ? idx : 0
+    return (
+      <div>
+        <div className="compact-filter-slider-row">
+          <input type="range" className="compact-filter-slider"
+            min={0} max={categories.length - 1} step={1} value={safeIdx}
+            onChange={e => onChange(categories[Number(e.target.value)])} />
+        </div>
+        {/* Custom labelled tick row beneath the slider */}
+        <div className="compact-filter-tick-row" aria-hidden="true">
+          {tickLabels.map((lbl, i) => (
+            <span key={i} className={`compact-filter-tick ${i === safeIdx ? 'active' : ''}`}>{lbl}</span>
+          ))}
+        </div>
+        <div style={{ fontSize: 11, color: '#bbb', marginTop: 6 }}>
+          {t(locale, 'topPercentSelected', { p: tickLabels[safeIdx] })}
+        </div>
+      </div>
+    )
+  }
   const breaks = def.breaks
   if (breaks && breaks.length > 1) {
     const closestIdx = breaks.reduce((best, b, i) =>

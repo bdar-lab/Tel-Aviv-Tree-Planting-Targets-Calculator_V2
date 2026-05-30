@@ -8,7 +8,7 @@ export interface SliderFilterDef {
   name: string
   nameKey: StringKey
   descKey: StringKey
-  operator: '<' | '>'
+  operator: '<' | '>' | '<=' | '>='
   min: number
   max: number
   step: number
@@ -18,7 +18,16 @@ export interface SliderFilterDef {
   iconSvg?: string
   iconPng?: string
   description?: string
-  breaks?: number[]  // Jenks natural breaks for non-linear slider
+  /** Jenks natural breaks for non-linear slider — slider position maps to a break value. */
+  breaks?: number[]
+  /**
+   * Categorical mode: each integer in `categories` is a discrete value the
+   * field can take (e.g. a class id 1..7). `tickLabels` provides the text
+   * shown under each tick. When set, the slider draws ticks and the
+   * readout uses `tickLabels[index]` formatted as "Top X% selected".
+   */
+  categories?: number[]
+  tickLabels?: string[]
 }
 
 export interface RangeSliderFilterDef {
@@ -77,33 +86,41 @@ export const FILTER_DEFINITIONS: FilterDef[] = [
     description: 'Spring/Summer Shade Index'
   },
   {
-    type: 'slider', field: 'ABw2k_max', name: 'Neighbourhood transit',
+    type: 'slider', field: 'class_2k', name: 'Neighbourhood transit',
     nameKey: 'filter_ABw2k_max_name', descKey: 'filter_ABw2k_max_desc',
-    operator: '>', min: 0, max: 620708, step: 1, defaultValue: 95218,
+    // Class 1 = lowest, class 7 = highest. Slider moves left→right from
+    // "all categories" (class >= 1, top 40%) to "only the top" (class >= 7,
+    // top 1%). Default 5 = top 7% (cats 5–7).
+    operator: '>=', min: 1, max: 7, step: 1, defaultValue: 5,
     iconType: 'svg', iconSvg: pedestrianSvg,
-    description: 'Betweenness centrality at 2km scale (higher = more connected neighbourhood)',
-    breaks: [0, 12543, 34937, 63404, 95218, 131092, 171924, 223600, 297391, 414733, 620708]
+    description: 'Street centrality class (1 = lowest, 7 = highest). Slider position = top % of streets selected.',
+    categories: [1, 2, 3, 4, 5, 6, 7],
+    tickLabels: ['40%', '25%', '15%', '10%', '7%', '2%', '1%']
   },
   {
-    type: 'slider', field: 'ABw5k_max', name: 'City transit',
+    type: 'slider', field: 'class_5k', name: 'City transit',
     nameKey: 'filter_ABw5k_max_name', descKey: 'filter_ABw5k_max_desc',
-    operator: '>', min: 0, max: 9115851, step: 1, defaultValue: 1181766,
+    operator: '>=', min: 1, max: 7, step: 1, defaultValue: 5,
     iconType: 'svg', iconSvg: carSvg,
-    description: 'Betweenness centrality at 5km scale (higher = more connected city-wide)',
-    breaks: [0, 128315, 372990, 724538, 1181766, 1755611, 2466287, 3340371, 4413712, 5847313, 9115851]
+    description: 'Street centrality class (1 = lowest, 7 = highest). Slider position = top % of streets selected.',
+    categories: [1, 2, 3, 4, 5, 6, 7],
+    tickLabels: ['40%', '25%', '15%', '10%', '7%', '2%', '1%']
   },
   {
-    type: 'slider', field: 'AIw1kH_mea', name: 'Local centers',
+    type: 'slider', field: 'class_ai1k', name: 'Local centers',
     nameKey: 'filter_AIw1kH_mea_name', descKey: 'filter_AIw1kH_mea_desc',
-    operator: '>', min: 0, max: 495, step: 1, defaultValue: 124,
+    // Same categorical shape as the transit filters: class 1 = lowest,
+    // class 7 = highest. Slider picks the top % most-central streets.
+    operator: '>=', min: 1, max: 7, step: 1, defaultValue: 5,
     iconType: 'png', iconPng: 'walking.png',
-    description: 'Closeness centrality at 1km scale (higher = closer to local centers)',
-    breaks: [0, 34, 89, 124, 158, 191, 224, 260, 301, 360, 495]
+    description: 'Local-centrality class (1 = lowest, 7 = highest). Slider position = top % of streets selected.',
+    categories: [1, 2, 3, 4, 5, 6, 7],
+    tickLabels: ['40%', '25%', '15%', '10%', '7%', '2%', '1%']
   },
   {
     type: 'slider', field: 'FSI500_mea', name: 'Building density',
     nameKey: 'filter_FSI500_mea_name', descKey: 'filter_FSI500_mea_desc',
-    operator: '>', min: 0, max: 5, step: 0.1, defaultValue: 1.5,
+    operator: '>', min: 0, max: 3, step: 0.1, defaultValue: 1.5,
     iconType: 'svg', iconSvg: buildingsSvg,
     description: 'Floor Space Index within 500m walking distance'
   },

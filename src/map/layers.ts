@@ -9,9 +9,11 @@ export const SELECTED_LAYER_TITLE = 'Selected streets'
 /** Filter field → visualization layer (canonical English titles). */
 export const FILTER_LAYER_MAPPINGS: Array<{ filterField: string; layerTitle: string }> = [
   { filterField: 'summer_SI', layerTitle: 'Spring/Summer Shade Index' },
-  { filterField: 'ABw2k_max', layerTitle: 'Neighbourhood transit' },
-  { filterField: 'ABw5k_max', layerTitle: 'City transit' },
-  { filterField: 'AIw1kH_mea', layerTitle: 'Local centers' },
+  // Transit filters now drive on the categorical class columns (1..7) so
+  // the slider can map directly to the legend categories.
+  { filterField: 'class_2k', layerTitle: 'Neighbourhood transit' },
+  { filterField: 'class_5k', layerTitle: 'City transit' },
+  { filterField: 'class_ai1k', layerTitle: 'Local centers' },
   { filterField: 'FSI500_mea', layerTitle: 'Building density' },
   { filterField: 'ARw500lm_1', layerTitle: 'Access to shops and restaurants' },
   { filterField: 'ADws_mean', layerTitle: 'School or preschool proximity' },

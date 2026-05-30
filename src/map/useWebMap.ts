@@ -43,6 +43,11 @@ export function useWebMap (containerRef: React.RefObject<HTMLDivElement>): WebMa
       container: containerRef.current,
       map: webmap
     })
+    // The default zoom in/out widget mounts in the top-left, which is hidden
+    // behind our custom layers panel. The calculator sidebar covers the
+    // right edge, so the bottom-left (under the layers panel) is the only
+    // unoccupied corner.
+    view.ui.move('zoom', 'bottom-left')
     viewRef.current = view
 
     view.when(

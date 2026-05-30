@@ -9,6 +9,7 @@ export type StringKey =
   | 'low' | 'high' | 'min' | 'max'
   | 'lessThan' | 'greaterThan'
   | 'jenksClass'
+  | 'topPercentSelected'
   // Filter bar
   | 'resetFilters'
   // Calculator section
@@ -63,6 +64,7 @@ const en: Record<StringKey, string> = {
   low: 'Low', high: 'High', min: 'Min', max: 'Max',
   lessThan: 'Less than', greaterThan: 'Greater than',
   jenksClass: 'Class {n} of {m} (Jenks natural breaks)',
+  topPercentSelected: 'Top {p} of streets selected',
 
   resetFilters: 'Reset Filters',
 
@@ -134,13 +136,13 @@ const en: Record<StringKey, string> = {
   filter_summer_SI_name: 'Shade Index',
   filter_summer_SI_desc: 'Spring/Summer Shade Index',
   filter_ABw2k_max_name: 'Neighbourhood transit',
-  filter_ABw2k_max_desc: 'Betweenness centrality at 2km scale (higher = more connected neighbourhood)',
+  filter_ABw2k_max_desc: 'Betweenness centrality at a 2 km scale (higher = more local through-movement). The slider picks the top % of the most-connected streets.',
   filter_ABw5k_max_name: 'City transit',
-  filter_ABw5k_max_desc: 'Betweenness centrality at 5km scale (higher = more connected city-wide)',
+  filter_ABw5k_max_desc: 'Betweenness centrality at a 5 km scale((higher = more city-scale through-movement). The slider picks the top % of the most-connected streets.',
   filter_AIw1kH_mea_name: 'Local centers',
-  filter_AIw1kH_mea_desc: 'Closeness centrality at 1km scale (higher = closer to local centers)',
+  filter_AIw1kH_mea_desc: 'Closeness centrality at a 1 km scale (higher = closer to local centers). The slider picks the top % of streets nearest to local centers.',
   filter_FSI500_mea_name: 'Building density',
-  filter_FSI500_mea_desc: 'Floor Space Index within 500m walking distance',
+  filter_FSI500_mea_desc: 'Floor Space Index within 500 m walking distance',
   filter_ARw500lm_1_name: 'Commercial proximity',
   filter_ARw500lm_1_desc: 'Number of shops and restaurants within 500m walking distance',
   filter_ADws_mean_name: 'School proximity',
@@ -153,11 +155,11 @@ const en: Record<StringKey, string> = {
   filter_width_desc: 'Street width in meters',
 
   sql_summer_SI: 'Spring/Summer Shade Index',
-  sql_ABw2k_max: 'Neighbourhood transit (betweenness centrality at 2km scale)',
-  sql_ABw5k_max: 'City transit (betweenness centrality at 5km scale)',
-  sql_AIw1kH_mea: 'Local centers (closeness centrality at 1km scale)',
-  sql_FSI500_mea: 'Floor Space Index within 500m walking distance',
-  sql_ARw500lm_1: 'Number of shops and restaurants within 500m walking distance',
+  sql_ABw2k_max: 'Neighbourhood transit class (2 km scale)',
+  sql_ABw5k_max: 'City transit class (5 km scale)',
+  sql_AIw1kH_mea: 'Local centers class (1 km scale)',
+  sql_FSI500_mea: 'Floor Space Index within 500 m walking distance',
+  sql_ARw500lm_1: 'Number of shops and restaurants within 500 m walking distance',
   sql_ADws_mean: 'Walking distance to the closest school or preschool',
   sql_ADwm_mean: 'Walking distance to the closest tram, metro or railway station',
   sql_ADwbu_mean: 'Walking distance to the closest bus stop',
@@ -180,6 +182,7 @@ const he: Record<StringKey, string> = {
   low: 'נמוך', high: 'גבוה', min: 'מינ׳', max: 'מקס׳',
   lessThan: 'פחות מ־', greaterThan: 'יותר מ־',
   jenksClass: 'קבוצה {n} מתוך {m} (שבירות טבעיות, Jenks)',
+  topPercentSelected: 'נבחרו {p} העליונים מהרחובות',
 
   resetFilters: 'אפס מסננים',
 
@@ -251,11 +254,11 @@ const he: Record<StringKey, string> = {
   filter_summer_SI_name: 'מדד הצללה',
   filter_summer_SI_desc: 'מדד ההצללה באביב/בקיץ',
   filter_ABw2k_max_name: 'תנועה שכונתית',
-  filter_ABw2k_max_desc: 'מרכזיות בין־קודקודית בקנה מידה של 2 ק״מ (גבוה יותר = שכונה מקושרת יותר)',
+  filter_ABw2k_max_desc: 'מרכזיות הרחוב בקנה מידה של 2 ק״מ. הסליידר בוחר את האחוז העליון של הרחובות המקושרים ביותר, בהתאם לקטגוריות בלגנדה (1 = נמוך, 7 = גבוה).',
   filter_ABw5k_max_name: 'תנועה עירונית',
-  filter_ABw5k_max_desc: 'מרכזיות בין־קודקודית בקנה מידה של 5 ק״מ (גבוה יותר = מקושר יותר ברמה עירונית)',
+  filter_ABw5k_max_desc: 'מרכזיות הרחוב בקנה מידה של 5 ק״מ. הסליידר בוחר את האחוז העליון של הרחובות המקושרים ביותר, בהתאם לקטגוריות בלגנדה (1 = נמוך, 7 = גבוה).',
   filter_AIw1kH_mea_name: 'מרכזים מקומיים',
-  filter_AIw1kH_mea_desc: 'מרכזיות קרבה בקנה מידה של 1 ק״מ (גבוה יותר = קרוב יותר למרכזים מקומיים)',
+  filter_AIw1kH_mea_desc: 'מרכזיות קרבה בקנה מידה של 1 ק״מ (גבוה יותר = קרוב יותר למרכזים מקומיים). הסליידר בוחר את האחוז העליון של הרחובות הקרובים ביותר למרכזים מקומיים.',
   filter_FSI500_mea_name: 'צפיפות בנייה',
   filter_FSI500_mea_desc: 'מדד שטח רצפה (FSI) במרחק הליכה של 500 מ׳',
   filter_ARw500lm_1_name: 'קרבה למסחר',
@@ -270,9 +273,9 @@ const he: Record<StringKey, string> = {
   filter_width_desc: 'רוחב הרחוב במטרים',
 
   sql_summer_SI: 'מדד ההצללה באביב/בקיץ',
-  sql_ABw2k_max: 'תנועה שכונתית (מרכזיות בין־קודקודית 2 ק״מ)',
-  sql_ABw5k_max: 'תנועה עירונית (מרכזיות בין־קודקודית 5 ק״מ)',
-  sql_AIw1kH_mea: 'מרכזים מקומיים (מרכזיות קרבה 1 ק״מ)',
+  sql_ABw2k_max: 'קטגוריית תנועה שכונתית (2 ק״מ)',
+  sql_ABw5k_max: 'קטגוריית תנועה עירונית (5 ק״מ)',
+  sql_AIw1kH_mea: 'קטגוריית מרכזים מקומיים (1 ק״מ)',
   sql_FSI500_mea: 'מדד שטח רצפה במרחק הליכה של 500 מ׳',
   sql_ARw500lm_1: 'מספר חנויות ומסעדות במרחק הליכה של 500 מ׳',
   sql_ADws_mean: 'מרחק הליכה לבית ספר או לגן ילדים',
@@ -307,8 +310,8 @@ export function t (locale: Locale, key: StringKey, vars?: Record<string, string 
 
 // Width-class labels
 export const CATEGORY_LABELS: Record<Locale, Record<string, string>> = {
-  en: { '1': '<10m', '2': '10-20m', '3': '20-30m', '4': '40m', '5': '>40m' },
-  he: { '1': 'עד 10 מ׳', '2': '20-10 מ׳', '3': '30-20 מ׳', '4': '40 מ׳', '5': 'מעל 40 מ׳' }
+  en: { '1': '<10m', '2': '10-20m', '3': '20-30m', '4': '30-40m', '5': '>40m' },
+  he: { '1': 'עד 10 מ׳', '2': '20-10 מ׳', '3': '30-20 מ׳', '4': '40-30 מ׳', '5': 'מעל 40 מ׳' }
 }
 
 // ─────────────────────────────────────────────────────────────────────────
