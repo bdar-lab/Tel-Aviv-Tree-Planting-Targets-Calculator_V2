@@ -137,7 +137,7 @@ export default function MapLayers ({ webmap, view, locale }: Props) {
           widget renders the layer name itself, so we don't add our own. */}
       {legend && legendRow && legendRow.visible && (
         <div className="map-layers-legend-popout" style={{ top: legend.top }}>
-          <LegendForLayer view={view} layerId={legend.id} />
+          <LegendForLayer view={view} layerId={legend.id} locale={locale} />
         </div>
       )}
     </div>
@@ -145,8 +145,9 @@ export default function MapLayers ({ webmap, view, locale }: Props) {
 }
 
 // Inline legend for a single layer, rendered via the ESRI Legend widget
-// scoped to one layerInfos entry.
-function LegendForLayer ({ view, layerId }: { view: MapView; layerId: string }) {
+// scoped to one layerInfos entry. The layer's renderer labels (class
+// breaks, unique values) are shown verbatim as published by the web map.
+function LegendForLayer ({ view, layerId, locale }: { view: MapView; layerId: string; locale: Locale }) {
   const [el, setEl] = useState<HTMLDivElement | null>(null)
   useEffect(() => {
     if (!el) return
@@ -158,6 +159,6 @@ function LegendForLayer ({ view, layerId }: { view: MapView; layerId: string }) 
       layerInfos: [{ layer }]
     })
     return () => legend.destroy()
-  }, [el, view, layerId])
+  }, [el, view, layerId, locale])
   return <div ref={setEl} />
 }

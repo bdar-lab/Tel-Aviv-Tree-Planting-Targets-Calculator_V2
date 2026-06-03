@@ -16,7 +16,7 @@ export default function App () {
   const onMapReady = useCallback((h: WebMapHandle) => setMapHandle(h), [])
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${locale === 'he' ? 'rtl' : ''}`}>
       <Header
         locale={locale}
         onOpenInstructions={() => setDialog('instructions')}

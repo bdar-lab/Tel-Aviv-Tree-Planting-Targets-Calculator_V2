@@ -55,8 +55,10 @@ export default function MapPanel ({ onReady }: Props) {
   }, [handle, onReady])
 
   // Stash __canonicalTitle on every layer (keyed off either language's
-  // title), so layer lookups keep working. The custom MapLayers component
-  // handles localized display itself — we never mutate layer.title here.
+  // title), so code-side layer lookups keep working. The MapLayers
+  // component handles localized DISPLAY in its own list; we never mutate
+  // layer.title here, so the ArcGIS Legend widget shows the title and
+  // class labels exactly as published by the web map.
   useEffect(() => {
     if (!handle.webmap) return
     const enDict = LAYER_TITLES.en

@@ -241,3 +241,40 @@ body {
   .map-tools-overlay { left: 232px; }
   .esri-ui-bottom-left { left: 232px !important; }
 }
+
+/* ── RTL (Hebrew) layout ───────────────────────────────────────────────────
+   Flip the whole sidebar arrangement so the calculator is on the LEFT and
+   the layers panel + map tools + zoom buttons are on the RIGHT. This keeps
+   the legend pop-out (which floats to the side of the layers panel) visible
+   on the outside of the screen rather than tucked into the middle. */
+
+.app-shell.rtl .sidebar {
+  right: auto;
+  left: 0;
+  border-left: none;
+  border-right: 1px solid var(--border);
+}
+
+.app-shell.rtl .map-overlay {
+  left: auto;
+  right: 0;
+  border-right: none;
+  border-left: 1px solid var(--border);
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.app-shell.rtl .map-tools-overlay {
+  left: auto;
+  right: 312px;
+}
+
+/* Move the ArcGIS zoom widget corner to the right side of the map. */
+.app-shell.rtl .esri-ui-bottom-left {
+  left: auto !important;
+  right: 312px !important;
+}
+
+@media (max-width: 860px) {
+  .app-shell.rtl .map-tools-overlay { right: 232px; left: auto; }
+  .app-shell.rtl .esri-ui-bottom-left { right: 232px !important; left: auto !important; }
+}
