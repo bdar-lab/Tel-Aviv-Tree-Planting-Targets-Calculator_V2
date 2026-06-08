@@ -10,6 +10,7 @@ export type StringKey =
   | 'lessThan' | 'greaterThan'
   | 'jenksClass'
   | 'topPercentSelected'
+  | 'allStreetsSelected'
   // Filter bar
   | 'resetFilters'
   // Calculator section
@@ -65,6 +66,7 @@ const en: Record<StringKey, string> = {
   lessThan: 'Less than', greaterThan: 'Greater than',
   jenksClass: 'Class {n} of {m} (Jenks natural breaks)',
   topPercentSelected: 'Top {p} of streets selected',
+  allStreetsSelected: 'All streets selected',
 
   resetFilters: 'Reset Filters',
 
@@ -136,11 +138,11 @@ const en: Record<StringKey, string> = {
   filter_summer_SI_name: 'Shade Index',
   filter_summer_SI_desc: 'Spring/Summer Shade Index',
   filter_ABw2k_max_name: 'Neighbourhood transit',
-  filter_ABw2k_max_desc: 'Betweenness centrality at a 2 km scale (higher = more local through-movement). The slider picks the top % of the most-connected streets.',
+  filter_ABw2k_max_desc: '2 km betweenness centrality: how often a street lies on shortest paths between other streets within 2 km, indicating local through-movement potential. The slider selects the top % of centrality values.',
   filter_ABw5k_max_name: 'City transit',
-  filter_ABw5k_max_desc: 'Betweenness centrality at a 5 km scale((higher = more city-scale through-movement). The slider picks the top % of the most-connected streets.',
+  filter_ABw5k_max_desc: '5 km betweenness centrality: how often a street lies on shortest paths between other streets within 5 km, indicating city-scale through-movement potential. The slider selects the top % of centrality values.',
   filter_AIw1kH_mea_name: 'Local centers',
-  filter_AIw1kH_mea_desc: 'Closeness centrality at a 1 km scale (higher = closer to local centers). The slider picks the top % of streets nearest to local centers.',
+  filter_AIw1kH_mea_desc: '1 km closeness centrality: how close a street is to all other streets within 1 km, indicating accessibility to nearby streets. The slider selects the top % of centrality values.',
   filter_FSI500_mea_name: 'Building density',
   filter_FSI500_mea_desc: 'Floor Space Index within 500 m walking distance',
   filter_ARw500lm_1_name: 'Commercial proximity',
@@ -183,6 +185,7 @@ const he: Record<StringKey, string> = {
   lessThan: 'פחות מ־', greaterThan: 'יותר מ־',
   jenksClass: 'קבוצה {n} מתוך {m} (שבירות טבעיות, Jenks)',
   topPercentSelected: 'נבחרו {p} העליונים מהרחובות',
+  allStreetsSelected: 'כל הרחובות נבחרו',
 
   resetFilters: 'אפס מסננים',
 
@@ -254,11 +257,11 @@ const he: Record<StringKey, string> = {
   filter_summer_SI_name: 'מדד הצללה',
   filter_summer_SI_desc: 'מדד ההצללה באביב/בקיץ',
   filter_ABw2k_max_name: 'תנועה שכונתית',
-  filter_ABw2k_max_desc: 'מרכזיות הרחוב בקנה מידה של 2 ק״מ. הסליידר בוחר את האחוז העליון של הרחובות המקושרים ביותר, בהתאם לקטגוריות בלגנדה (1 = נמוך, 7 = גבוה).',
+  filter_ABw2k_max_desc: 'מרכזיות בין־קודקודית 2 ק״מ: באיזו תדירות רחוב נמצא על המסלולים הקצרים ביותר בין רחובות אחרים בטווח של 2 ק״מ — מדד לפוטנציאל תנועת מעבר מקומית. הסליידר בוחר את האחוז העליון של ערכי המרכזיות.',
   filter_ABw5k_max_name: 'תנועה עירונית',
-  filter_ABw5k_max_desc: 'מרכזיות הרחוב בקנה מידה של 5 ק״מ. הסליידר בוחר את האחוז העליון של הרחובות המקושרים ביותר, בהתאם לקטגוריות בלגנדה (1 = נמוך, 7 = גבוה).',
+  filter_ABw5k_max_desc: 'מרכזיות בין־קודקודית 5 ק״מ: באיזו תדירות רחוב נמצא על המסלולים הקצרים ביותר בין רחובות אחרים בטווח של 5 ק״מ — מדד לפוטנציאל תנועת מעבר ברמה עירונית. הסליידר בוחר את האחוז העליון של ערכי המרכזיות.',
   filter_AIw1kH_mea_name: 'מרכזים מקומיים',
-  filter_AIw1kH_mea_desc: 'מרכזיות קרבה בקנה מידה של 1 ק״מ (גבוה יותר = קרוב יותר למרכזים מקומיים). הסליידר בוחר את האחוז העליון של הרחובות הקרובים ביותר למרכזים מקומיים.',
+  filter_AIw1kH_mea_desc: 'מרכזיות קרבה 1 ק״מ: עד כמה רחוב קרוב לכל הרחובות האחרים בטווח של 1 ק״מ — מדד לנגישות לרחובות סמוכים. הסליידר בוחר את האחוז העליון של ערכי המרכזיות.',
   filter_FSI500_mea_name: 'צפיפות בנייה',
   filter_FSI500_mea_desc: 'מדד שטח רצפה (FSI) במרחק הליכה של 500 מ׳',
   filter_ARw500lm_1_name: 'קרבה למסחר',

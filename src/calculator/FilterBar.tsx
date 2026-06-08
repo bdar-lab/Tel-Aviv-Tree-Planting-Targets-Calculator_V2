@@ -28,28 +28,66 @@ function SliderContent ({ def, value, onChange, locale }: {
   def: FilterDef & { type: 'slider' }; value: number; onChange: (v: number) => void; locale: Locale
 }) {
   // Categorical slider: discrete categories with custom tick labels.
-  // Slider position N → categories[N] → SQL e.g. `class_2k >= 5`.
-  // The readout is "Top X% selected" using tickLabels[N].
-  const categories = def.categories
-  const tickLabels = def.tickLabels
-  if (categories && tickLabels && categories.length === tickLabels.length) {
+  // Slider position N → categories[N] → SQL e.g. `class_2k >= 5`. The
+  // readout below the slider uses `readouts[N]` if provided, otherwise
+  // the default "Top X% selected" template.
+  //
+  // In Hebrew, mirror the slider visually so it reads right-to-left:
+  // categories, tickLabels and readouts are reversed in place. The user's
+  // numeric value (the class id) is unchanged — only its position on the
+  // slider flips — so the SQL stays correct.
+  const rawCats = def.categories
+  const rawTicks = def.tickLabels
+  const rawReadouts = def.readouts
+  if (rawCats && rawTicks && rawCats.length === rawTicks.length) {
+    const reverse = locale === 'he'
+    const categories = reverse ? [...rawCats].reverse() : rawCats
+    const tickLabels = reverse ? [...rawTicks].reverse() : rawTicks
+    const readouts = rawReadouts && reverse ? [...rawReadouts].reverse() : rawReadouts
     const idx = Math.max(0, categories.indexOf(value))
     const safeIdx = idx >= 0 ? idx : 0
+    const readoutKey = readouts?.[safeIdx] ?? 'topPercentSelected'
     return (
       <div>
         <div className="compact-filter-slider-row">
-          <input type="range" className="compact-filter-slider"
-            min={0} max={categories.length - 1} step={1} value={safeIdx}
-            onChange={e => onChange(categories[Number(e.target.value)])} />
+          <input
+            type="range"
+            className="compact-filter-slider"
+            min={0}
+            max={categories.length - 1}
+            step={1}
+            value={safeIdx}
+            // In Hebrew, mirror the rendered slider so the thumb's visual
+            // position matches the reversed tick labels. The internal value
+            // semantics (and therefore the SQL) are unchanged.
+            style={reverse ? { transform: 'scaleX(-1)' } : undefined}
+            onChange={e => onChange(categories[Number(e.target.value)])}
+          />
         </div>
-        {/* Custom labelled tick row beneath the slider */}
+        {/* Custom labelled tick row beneath the slider. Each label is
+            absolutely positioned so its centre sits directly under the
+            corresponding slider thumb position. The thumb (14 px wide)
+            travels from x = 7 px to x = width - 7 px, so we compute
+            `calc(7px + (100% - 14px) * i / (N-1))` for each tick. */}
         <div className="compact-filter-tick-row" aria-hidden="true">
-          {tickLabels.map((lbl, i) => (
-            <span key={i} className={`compact-filter-tick ${i === safeIdx ? 'active' : ''}`}>{lbl}</span>
-          ))}
+          {tickLabels.map((lbl, i) => {
+            const denom = tickLabels.length - 1
+            const left = denom === 0
+              ? '50%'
+              : `calc(7px + (100% - 14px) * ${i} / ${denom})`
+            return (
+              <span
+                key={i}
+                className={`compact-filter-tick ${i === safeIdx ? 'active' : ''}`}
+                style={{ left }}
+              >
+                {lbl}
+              </span>
+            )
+          })}
         </div>
         <div style={{ fontSize: 11, color: '#bbb', marginTop: 6 }}>
-          {t(locale, 'topPercentSelected', { p: tickLabels[safeIdx] })}
+          {t(locale, readoutKey, { p: tickLabels[safeIdx] })}
         </div>
       </div>
     )

@@ -167,18 +167,35 @@ body {
   flex: 1 1 auto;
   position: relative;
   display: flex;
+  align-items: stretch;
   min-height: 0;
+  /* No margins/padding so the map flush-fills the area below the header. */
+  overflow: hidden;
 }
 
 /* ── Map ───────────────────────────────────────────────────────────────── */
 .map-panel {
   flex: 1 1 auto;
   position: relative;
+  /* Explicit height ensures the ArcGIS MapView container fills the flex
+     row vertically. Without this, line-height/baseline gaps on the
+     <main> can leave a thin strip below the map. */
+  height: 100%;
+  min-height: 0;
 }
 
+/* Inset the ArcGIS MapView container so it sits BETWEEN the layers panel
+   (300 px on the left) and the calculator sidebar (320 px on the right).
+   That way the ArcGIS attribution/credits strip at the bottom of the map
+   stays fully inside the visible map column instead of running underneath
+   the side panels. The overlays themselves are positioned against
+   .map-panel and remain in place. */
 .map-view {
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 300px;
+  right: 320px;
 }
 
 .map-error {
@@ -219,27 +236,27 @@ body {
   color: var(--text);
 }
 
-/* Map tools (basemap / fullscreen) — just to the right of the 300px-wide
-   layers panel. */
+/* Map tools (basemap / fullscreen) — pinned to the BOTTOM-LEFT corner of
+   the map area (just to the right of the layers panel, at the bottom). */
 .map-tools-overlay {
   position: absolute;
-  top: 12px;
+  bottom: 12px;
   left: 312px;
   z-index: 7;
 }
 
-/* Shift the ArcGIS bottom-left UI corner (where we put the zoom widget)
-   to the right of the layers panel so it isn't hidden behind it. */
-.esri-ui-bottom-left {
-  left: 312px !important;
-}
+/* The ArcGIS bottom-right UI corner (containing our zoom widget) is
+   positioned inside the .map-view, which is already inset away from the
+   calculator sidebar. No additional offset is needed. */
 
 /* Tablet / phone: hide the calculator sidebar, map-only view. */
 @media (max-width: 860px) {
   .sidebar { display: none; }
   .map-overlay { width: 220px; }
   .map-tools-overlay { left: 232px; }
-  .esri-ui-bottom-left { left: 232px !important; }
+  /* With the calculator sidebar hidden, the map extends to the right
+     edge. */
+  .map-view { left: 220px; right: 0; }
 }
 
 /* ── RTL (Hebrew) layout ───────────────────────────────────────────────────
@@ -263,18 +280,32 @@ body {
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.5);
 }
 
+/* Mirror the map-view inset: calculator sits on the LEFT (320 px) and
+   the layers panel on the RIGHT (300 px). */
+.app-shell.rtl .map-view {
+  left: 320px;
+  right: 300px;
+}
+
+/* In Hebrew the layers panel is on the RIGHT and the calculator on the
+   LEFT, so the bottom-corner placements mirror: map tools sit just to
+   the LEFT of the layers panel (bottom-right of the map area), and zoom
+   sits just to the RIGHT of the calculator (bottom-left of the map area). */
 .app-shell.rtl .map-tools-overlay {
   left: auto;
   right: 312px;
 }
 
-/* Move the ArcGIS zoom widget corner to the right side of the map. */
-.app-shell.rtl .esri-ui-bottom-left {
-  left: auto !important;
-  right: 312px !important;
+/* In Hebrew the calculator sidebar is on the left, so move the
+   bottom-right corner of the ArcGIS UI (containing the zoom widget) to
+   the bottom-LEFT corner of the now-mirrored map view. */
+.app-shell.rtl .esri-ui-bottom-right {
+  right: auto !important;
+  left: 12px !important;
 }
 
 @media (max-width: 860px) {
   .app-shell.rtl .map-tools-overlay { right: 232px; left: auto; }
-  .app-shell.rtl .esri-ui-bottom-left { right: 232px !important; left: auto !important; }
+  .app-shell.rtl .esri-ui-bottom-right { left: 12px !important; right: auto !important; }
+  .app-shell.rtl .map-view { right: 220px; left: 0; }
 }

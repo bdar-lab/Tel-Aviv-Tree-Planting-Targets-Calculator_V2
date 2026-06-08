@@ -22,12 +22,17 @@ export interface SliderFilterDef {
   breaks?: number[]
   /**
    * Categorical mode: each integer in `categories` is a discrete value the
-   * field can take (e.g. a class id 1..7). `tickLabels` provides the text
-   * shown under each tick. When set, the slider draws ticks and the
-   * readout uses `tickLabels[index]` formatted as "Top X% selected".
+   * field can take (e.g. a class id 1..7), listed in slider-position order
+   * (so categories[0] = leftmost slider position, regardless of numeric
+   * value). `tickLabels` provides the text shown under each tick.
+   *
+   * `readouts` (optional) supplies a per-position i18n key for the readout
+   * line below the slider. When omitted, the default
+   * `topPercentSelected` template is used with the tick label.
    */
   categories?: number[]
   tickLabels?: string[]
+  readouts?: StringKey[]
 }
 
 export interface RangeSliderFilterDef {
@@ -88,34 +93,56 @@ export const FILTER_DEFINITIONS: FilterDef[] = [
   {
     type: 'slider', field: 'class_2k', name: 'Neighbourhood transit',
     nameKey: 'filter_ABw2k_max_name', descKey: 'filter_ABw2k_max_desc',
-    // Class 1 = lowest, class 7 = highest. Slider moves left→right from
-    // "all categories" (class >= 1, top 40%) to "only the top" (class >= 7,
-    // top 1%). Default 5 = top 7% (cats 5–7).
+    // Class 1 = lowest, class 7 = highest. The slider position is
+    // CUMULATIVE: each tick selects the top X% of most-connected streets.
+    // Left (position 0) = strictest (top 1%, only class 7). Right
+    // (position 6) = no filter (100%, all classes 1..7). Default sits at
+    // position 2 (top 10%, classes 5..7).
     operator: '>=', min: 1, max: 7, step: 1, defaultValue: 5,
     iconType: 'svg', iconSvg: pedestrianSvg,
     description: 'Street centrality class (1 = lowest, 7 = highest). Slider position = top % of streets selected.',
-    categories: [1, 2, 3, 4, 5, 6, 7],
-    tickLabels: ['40%', '25%', '15%', '10%', '7%', '2%', '1%']
+    // categories are listed in slider-position order (left to right).
+    // categoriesReversed=false: position 0 → categories[0] (class 7).
+    categories: [7, 6, 5, 4, 3, 2, 1],
+    tickLabels: ['1%', '3%', '10%', '20%', '35%', '60%', '100%'],
+    readouts: [
+      'topPercentSelected', 'topPercentSelected', 'topPercentSelected',
+      'topPercentSelected', 'topPercentSelected', 'topPercentSelected',
+      'allStreetsSelected'
+    ]
   },
   {
     type: 'slider', field: 'class_5k', name: 'City transit',
     nameKey: 'filter_ABw5k_max_name', descKey: 'filter_ABw5k_max_desc',
+    // Same cumulative scheme as Neighbourhood transit: left = top 1%
+    // (class 7 only), right = 100% (no filter). Default = top 10%.
     operator: '>=', min: 1, max: 7, step: 1, defaultValue: 5,
     iconType: 'svg', iconSvg: carSvg,
     description: 'Street centrality class (1 = lowest, 7 = highest). Slider position = top % of streets selected.',
-    categories: [1, 2, 3, 4, 5, 6, 7],
-    tickLabels: ['40%', '25%', '15%', '10%', '7%', '2%', '1%']
+    categories: [7, 6, 5, 4, 3, 2, 1],
+    tickLabels: ['1%', '3%', '10%', '20%', '35%', '60%', '100%'],
+    readouts: [
+      'topPercentSelected', 'topPercentSelected', 'topPercentSelected',
+      'topPercentSelected', 'topPercentSelected', 'topPercentSelected',
+      'allStreetsSelected'
+    ]
   },
   {
     type: 'slider', field: 'class_ai1k', name: 'Local centers',
     nameKey: 'filter_AIw1kH_mea_name', descKey: 'filter_AIw1kH_mea_desc',
-    // Same categorical shape as the transit filters: class 1 = lowest,
-    // class 7 = highest. Slider picks the top % most-central streets.
+    // Cumulative scheme: each tick selects the top X% of most-central
+    // streets. Left = top 5% (class 7 only), right = 100% (all classes,
+    // no filter). Default = top 15% (classes 5..7).
     operator: '>=', min: 1, max: 7, step: 1, defaultValue: 5,
     iconType: 'png', iconPng: 'walking.png',
     description: 'Local-centrality class (1 = lowest, 7 = highest). Slider position = top % of streets selected.',
-    categories: [1, 2, 3, 4, 5, 6, 7],
-    tickLabels: ['40%', '25%', '15%', '10%', '7%', '2%', '1%']
+    categories: [7, 6, 5, 4, 3, 2, 1],
+    tickLabels: ['5%', '10%', '15%', '25%', '50%', '75%', '100%'],
+    readouts: [
+      'topPercentSelected', 'topPercentSelected', 'topPercentSelected',
+      'topPercentSelected', 'topPercentSelected', 'topPercentSelected',
+      'allStreetsSelected'
+    ]
   },
   {
     type: 'slider', field: 'FSI500_mea', name: 'Building density',

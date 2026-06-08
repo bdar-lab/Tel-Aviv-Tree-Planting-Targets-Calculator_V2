@@ -60,17 +60,20 @@
   background: #3a8ed0;
   position: relative;
 }
-/* checkmark */
+/* checkmark — anchored at the box centre and rotated 45° so its visual
+   centre lands exactly on the box's geometric centre regardless of the
+   asymmetric "L" shape made by border-right + border-bottom. */
 .tick.on::after {
   content: '';
   position: absolute;
-  left: 4px;
-  top: 1px;
-  width: 5px;
-  height: 9px;
+  left: 50%;
+  top: 45%;
+  width: 4px;
+  height: 8px;
   border: solid #fff;
   border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+  transform: translate(-50%, -50%) rotate(45deg);
+  transform-origin: center;
 }
 
 /* Custom layer icon (SVG span or <img>). */
