@@ -198,6 +198,22 @@ body {
   right: 320px;
 }
 
+/* Suppress the ArcGIS MapView's focus indicator — drawn as a 2 px
+   coloured ring on `.esri-view-surface:focus::after` via the CSS var
+   `--esri-view-outline`. Overriding the var (and the pseudo-element's
+   outline) removes the blue frame that appears after panning the map. */
+.map-view .esri-view,
+.map-view .esri-view-surface,
+.esri-view {
+  --esri-view-outline: none !important;
+}
+.map-view .esri-view-surface:focus::after,
+.esri-view-surface:focus::after {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 .map-error {
   position: absolute;
   top: 12px;
