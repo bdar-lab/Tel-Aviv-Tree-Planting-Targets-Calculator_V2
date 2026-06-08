@@ -1,33 +1,40 @@
-/* Basemap / fullscreen toggle buttons — ported from map-tools/style.scss. */
+/* Basemap / fullscreen toggle buttons — styled to match the ArcGIS zoom
+   widget: a stack of two square buttons, near-black background, straight
+   corners, thin separator between buttons, subtle shadow. */
 
 .map-tools-panel {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 4px;
-  background: rgba(50, 50, 50, 0.9);
-  border-radius: 6px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* Exact ESRI dark-theme button values, read from
+   @arcgis/core/assets/esri/themes/dark/main.css
+   (.esri-widget--button + .esri-zoom .esri-widget--button:last-child). */
 .map-tool-btn {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid transparent;
-  border-radius: 4px;
+  border: none;
+  border-radius: 0;
   cursor: pointer;
-  background: transparent;
-  padding: 4px;
-  color: #ccc;
-  transition: background 0.15s, border-color 0.15s;
+  background: #242424;
+  padding: 0;
+  color: #adadad;
+  transition: background-color 0.125s ease-in-out, color 0.125s ease-in-out;
 }
-.map-tool-btn:hover { background: rgba(255, 255, 255, 0.15); }
+/* Separator between the stacked buttons, matching the zoom widget's
+   `border-top: 1px solid #adadad4d` between its two buttons. */
+.map-tool-btn + .map-tool-btn {
+  border-top: 1px solid #adadad4d;
+}
+.map-tool-btn:hover {
+  background: #303030;
+  color: #ededed;
+}
 .map-tool-btn.active {
-  background: rgba(0, 121, 193, 0.3);
-  border-color: #0079c1;
+  background: #303030;
   color: #4fc3f7;
 }
 .map-tool-btn span {
